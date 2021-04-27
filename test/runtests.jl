@@ -1,6 +1,10 @@
-using JLSponge
 using Test
+using JLSponge
 
-@testset "JLSponge.jl" begin
-    # Write your tests here.
+include("byte_stream_test_harness.jl")
+
+for test_file in readdir(@__DIR__)
+    if test_file != "runtests.jl"
+        include(test_file)
+    end
 end
