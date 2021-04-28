@@ -10,9 +10,10 @@ end
 
 mutable struct StreamReassembler
     output::ByteStream
-    unassembled_strings::OrderedSet{Int, String}
+    unassembled_strings::SortedDict{Int, String}
     capacity::Int
+    unassembled_bytes::Int
     cur_idx::Int
     eof_idx::Int
-    StreamReassembler(cap::Int) = new(ByteStream(cap), OrderedSet{Int, String}(), cap, 0, 0)
+    StreamReassembler(cap::Int) = new(ByteStream(cap), OrderedDict{Int, String}(), cap, 0, 0, 0)
 end

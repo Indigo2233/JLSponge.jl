@@ -8,7 +8,7 @@ input_ended(bs::ByteStream)::Bool = bs.has_eof
 
 buffer_empty(bs::ByteStream)::Bool = isempty(bs.buf)
 
-eof(bs::ByteStream)::Bool = bs.has_eof && isempty(bs.buf)
+Base.eof(bs::ByteStream)::Bool = bs.has_eof && isempty(bs.buf)
 
 function peek_out(bs::ByteStream, len)
     @inbounds @simd for i in 1:len
@@ -36,7 +36,7 @@ function write!(bs::ByteStream, data::String)::Int
     return bytes_to_write
 end
 
-function read!(bs::ByteStream, len)
+function Base.read!(bs::ByteStream, len::Int=typemax(Int))
     read_len = min(len, buffer_size(bs))
     s =  peek_out(bs, read_len)
     pop_output!(bs, read_len)
