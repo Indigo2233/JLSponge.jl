@@ -29,3 +29,31 @@ mutable struct TCPReceiver
     # has_fin::Bool
     TCPReceiver(cap::Int) = new(StreamReassembler(cap), cap, 0, WrappingInt32(0), false)
 end
+
+mutable struct TCPSender
+    capacity::Int
+    isn::WrappingInt32
+    
+    segments_out::Queue{TCPSegment}
+    outstanding_segs::Vector{TCPSegment}
+
+    initial_retransmission_timeout::Int
+    RTO::Int
+    ticks::Int
+    consecutive_retransmissions::Int
+
+    timer_on::Bool
+    fin_flg::Bool
+    
+    stream::ByteStream
+
+    next_seqno::Int
+    last_acked::Int
+    bytes_in_flight::Int
+    win_size::Int
+
+    TCPSender(cap::Int=64000, retx_timeout::UInt16=UInt16(1000), fixed_isn=nothing) =
+        new(cap, fixed_isn === nothing ? WrappingInt32(rand(1:typemax(UInt32))) : fixed_isn,
+        Queue{TCPSegment}(), TCPSegment[], retx_timeout, capacity::Int, 0, 0, 
+        false, false, ByteStream(cap), 0, 0, 0, 0)
+end
