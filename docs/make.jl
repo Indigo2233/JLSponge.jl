@@ -19,5 +19,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/sjtu_suyao/JLSponge.jl",
+    repo="gitee.com/sjtu_suyao/JLSponge.jl",
 )
