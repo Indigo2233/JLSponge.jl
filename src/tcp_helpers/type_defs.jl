@@ -9,10 +9,6 @@ end
     ackno::WrappingInt32 = WrappingInt32(0)
     doff::UInt8 = 5
     urg::Bool = false
-    seqno::WrappingInt32 = WrappingInt32(0)
-    ackno::WrappingInt32 = WrappingInt32(0)
-    doff::UInt8 = 5
-    urg::Bool = false
     ack::Bool = false
     psh::Bool = false
     rst::Bool = false
@@ -30,6 +26,8 @@ end
 struct TCPSegment
     header::TCPHeader
     payload::Buffer
+    TCPSegment(data::String) = new(TCPHeader(), Buffer(Ref(data)))
+    TCPSegment(header::TCPHeader, data) = new(header, Buffer(Ref(data)))
 end
 
 @inline length_in_sequence_space(seg::TCPSegment) = length(seg.payload.storage[]) + seg.header.syn + seg.header.fin

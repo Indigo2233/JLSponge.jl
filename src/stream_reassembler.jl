@@ -1,4 +1,4 @@
-function push_substring(sr::StreamReassembler, data::AbstractString, index::Int, eof_flg::Bool=false)
+function push_substring!(sr::StreamReassembler, data::AbstractString, index::Int, eof_flg::Bool=false)
     end_of_str = index + length(data)
     if eof_flg
         sr.eof_idx = end_of_str

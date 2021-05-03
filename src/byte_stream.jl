@@ -1,6 +1,6 @@
 set_error(bs::ByteStream)::Nothing = (bs.error = true; nothing)
 
-error(bs::ByteStream)::Bool = bs.error
+Base.error(bs::ByteStream)::Bool = bs.error
 
 end_input!(bs::ByteStream)::Nothing = (bs.has_eof = true; nothing)
 

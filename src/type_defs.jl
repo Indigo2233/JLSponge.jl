@@ -15,13 +15,9 @@ mutable struct StreamReassembler
     unassembled_strings::SortedDict{Int,String}
     capacity::Int
     unassembled_bytes::Int
-    capacity::Int
-    unassembled_bytes::Int
     cur_idx::Int
     eof_idx::Int
-    function StreamReassembler(cap::Int)
-        return new(ByteStream(cap), OrderedDict{Int,String}(), cap, 0, 0, 0)
-    end
+    StreamReassembler(cap::Int) = return new(ByteStream(cap), OrderedDict{Int,String}(), cap, 0, 0, 0)
 end
 
 mutable struct TCPReceiver
@@ -31,5 +27,5 @@ mutable struct TCPReceiver
     isn::WrappingInt32
     has_syn::Bool
     # has_fin::Bool
-    TCPReceiver(cap::Int) = new(StreamReassembler(cap), cap, 0, 0, false)
+    TCPReceiver(cap::Int) = new(StreamReassembler(cap), cap, 0, WrappingInt32(0), false)
 end

@@ -14,8 +14,10 @@ include("tcp_receiver.jl")
 export ByteStream, error, end_input!, input_ended, buffer_empty, eof, peek_out,
        pop_output!, remain_cap, buffer_size
 
-export StreamReassembler, push_substring, stream_out, unassembled_bytes, isempty 
+export StreamReassembler, push_substring!, stream_out, unassembled_bytes, isempty 
 
-export TCPReceiver, 
+export WrappingInt32, TCPSegment, TCPHeader, wrap, unwrap
+
+export TCPReceiver, ackno, window_size, unassembled_bytes, stream_out, segment_received!, assembled_bytes
 
 end
