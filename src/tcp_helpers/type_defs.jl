@@ -1,0 +1,35 @@
+struct WrappingInt32
+    val::UInt32
+end
+
+@kwdef mutable struct TCPHeader
+    sport::UInt16 = 0
+    dport::UInt16 = 0
+    seqno::WrappingInt32 = WrappingInt32(0)
+    ackno::WrappingInt32 = WrappingInt32(0)
+    doff::UInt8 = 5
+    urg::Bool = false
+    seqno::WrappingInt32 = WrappingInt32(0)
+    ackno::WrappingInt32 = WrappingInt32(0)
+    doff::UInt8 = 5
+    urg::Bool = false
+    ack::Bool = false
+    psh::Bool = false
+    rst::Bool = false
+    syn::Bool = false
+    fin::Bool = false
+    win::UInt16 = 0
+    cksum::UInt16 = 0
+    uptr::UInt16 = 0
+end
+
+struct Buffer
+    storage::Base.RefValue{String}
+end
+
+struct TCPSegment
+    header::TCPHeader
+    payload::Buffer
+end
+
+@inline length_in_sequence_space(seg::TCPSegment) = length(seg.payload.storage[]) + seg.header.syn + seg.header.fin
