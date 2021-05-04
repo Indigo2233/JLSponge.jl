@@ -4,15 +4,15 @@ bytes_in_flight(sender::TCPSender) = sender.bytes_in_flight
 
 next_seqno_absolute(sender::TCPSender) = sender.next_seqno
 
-next_seqno(sender::TCPSender) = wrap(sender.next_seqno, sender.isn)
+next_seqno(sender::TCPSender) = wrap(sender.next_seqno |> UInt, sender.isn)
 
 segments_out(sender::TCPSender) = sender.segments_out
 
 stream_in(sender::TCPSender) = sender.stream
 
-function fill_window(sender::TCPSender)
+function fill_window!(sender::TCPSender)
     (sender.next_seqno == 0) && 
-        send_seg(sender, TCPSegment(TCPHeader(syn=true), ""))
+        send_seg!(sender, TCPSegment(TCPHeader(syn=true), ""))
     win = sender.win_size > 0 ? sender.win_size : 1
     remain = 0
     # (win < sender.next_seqno - sender.last_acked) && return
@@ -23,11 +23,11 @@ function fill_window(sender::TCPSender)
             seg.header.fin = sender.fin_flg = true
         end
         (length_in_sequence_space(seg) == 0) && break
-        send_seg(sender, seg)
+        send_seg!(sender, seg)
     end
 end
 
-function send_seg(sender::TCPSender, seg::TCPSegment)
+function send_seg!(sender::TCPSender, seg::TCPSegment)
     header = seg.header
     header.seqno = next_seqno(sender)
     header.syn = sender.next_seqno == 0
@@ -41,7 +41,7 @@ function send_seg(sender::TCPSender, seg::TCPSegment)
     sender.timer_on = true
 end
 
-function ack_received(sender::TCPSender, ackno::WrappingInt32, win_size::UInt16)
+function ack_received!(sender::TCPSender, ackno::WrappingInt32, win_size::UInt16)
     abs_ackno = unwrap(ackno, sender.isn, sender.last_acked)
     sender.win_size = win_size
     (abs_ackno <= sender.last_acked || abs_ackno > sender.next_seqno) && return
@@ -64,7 +64,7 @@ function ack_received(sender::TCPSender, ackno::WrappingInt32, win_size::UInt16)
     sender.RTO = sender.initial_retransmission_timeout
     sender.ticks = 0
 
-    fill_window(sender)   
+    fill_window!(sender)   
     !isempty(sender.outstanding_segs) && (sender.timer_on = true)    
 end
 
@@ -87,5 +87,5 @@ end
 
 consecutive_retransmissions(sender::TCPSender) = sender.consecutive_retransmissions
 
-send_empty_segment(sender::TCPSender) =
+send_empty_segment!(sender::TCPSender) =
     enqueue!(sender.segments_out, TCPSegment(TCPHeader(seqno=wrap(sender.next_seqno, sender.isn)) ,""))

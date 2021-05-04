@@ -30,4 +30,5 @@ struct TCPSegment
     TCPSegment(header::TCPHeader, data) = new(header, Buffer(Ref(data)))
 end
 
+@inline Base.length(bf::Buffer) = length(bf.storage[])
 @inline length_in_sequence_space(seg::TCPSegment) = length(seg.payload.storage[]) + seg.header.syn + seg.header.fin

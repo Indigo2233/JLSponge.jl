@@ -52,8 +52,8 @@ mutable struct TCPSender
     bytes_in_flight::Int
     win_size::Int
 
-    TCPSender(cap::Int=64000, retx_timeout::UInt16=UInt16(1000), fixed_isn=nothing) =
+    TCPSender(;cap::Int=64000, retx_timeout::UInt16=UInt16(1000), fixed_isn=nothing) =
         new(cap, fixed_isn === nothing ? WrappingInt32(rand(1:typemax(UInt32))) : fixed_isn,
-        Queue{TCPSegment}(), TCPSegment[], retx_timeout, capacity::Int, 0, 0, 
+        Queue{TCPSegment}(), TCPSegment[], retx_timeout, retx_timeout, 0, 0, 
         false, false, ByteStream(cap), 0, 0, 0, 0)
 end
