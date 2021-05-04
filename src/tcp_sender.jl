@@ -68,7 +68,7 @@ function ack_received!(sender::TCPSender, ackno::WrappingInt32, win_size::UInt16
     !isempty(sender.outstanding_segs) && (sender.timer_on = true)    
 end
 
-function tick(sender::TCPSender, ms_since_last_tick::Int)
+function tick!(sender::TCPSender, ms_since_last_tick::Int)
     !sender.timer_on && return
     sender.ticks += ms_since_last_tick
     if sender.ticks >= sender.RTO && !isempty(sender.outstanding_segs)

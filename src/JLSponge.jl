@@ -11,6 +11,7 @@ include("stream_reassembler.jl")
 include("wrapping_integers.jl")
 include("tcp_receiver.jl")
 include("tcp_sender.jl")
+include("tcp_connection.jl")
 
 export ByteStream, error, end_input!, input_ended, buffer_empty, eof, peek_out, pop_output!,
        remain_cap, buffer_size, write!
