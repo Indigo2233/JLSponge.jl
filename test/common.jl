@@ -1,32 +1,14 @@
 using DataStructures
+using JLSponge
 const SegmentArrives_Result_OK = true
 const SegmentArrives_Result_NOT_SYN = false
-
-@enum State begin
-    LISTEN
-    SYN_RCVD
-    SYN_SENT
-    SYN_ACKED
-    FIN_RCVD
-    FIN_SENT
-    FIN_ACKED
-    ESTABLISHED 
-    CLOSE_WAIT   
-    LAST_ACK    
-    FIN_WAIT_1
-    FIN_WAIT_2
-    CLOSING    
-    TIME_WAIT    
-    CLOSED     
-    RESET
-    ERROR
-end
 
 function build_seg(; data="", ack=false, rst=false, syn=false, fin=false,
                    seqno=WrappingInt32(0), ackno=WrappingInt32(0), win=UInt16(0))
     return seg = TCPSegment(TCPHeader(; ack, rst, syn, fin, seqno, ackno, win), data)
     return seg
 end
+
 function segment_arrives(receiver::TCPReceiver; data="", with_ack=nothing, with_syn=false,
                          with_fin=false, seqno=0, result=nothing)
     seg = build_seg(; data, syn=with_syn, fin=with_fin, seqno=WrappingInt32(seqno),
@@ -79,12 +61,12 @@ function ack_received_test(sender::TCPSender, ackno, win_size::Integer=UInt16(13
     fill_window!(sender)
 end
 
-function write_bytes(sender::TCPSender, bytes="", end_input=false)
+function write_bytes!(sender::TCPSender, bytes="", end_input=false)
     write!(stream_in(sender), bytes)
     end_input && end_input!(stream_in(sender))
     fill_window!(sender)
 end
 
 function expect_state(sender::TCPSender, state)
-    state_summary(sender) != state && error("state error")
+    state_summary(sender) != state && error("state error:", state_summary(sender), " rather than ", state)
 end
