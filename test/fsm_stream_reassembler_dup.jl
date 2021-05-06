@@ -1,4 +1,3 @@
-x
 function main() 
     let rs = StreamReassembler(65000)
         push_substring!(rs, "abcd", 0)

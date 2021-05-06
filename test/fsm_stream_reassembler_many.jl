@@ -15,7 +15,7 @@ function main()
         push_substring!(rs, "ab", 0)
 
         @assert rs.cur_idx == 2
-        @assert read!(rs.output) == "a"
+        @assert read!(rs.output) == "b"
     end
     let rs = StreamReassembler(1000)
         push_substring!(rs, "b", 1)

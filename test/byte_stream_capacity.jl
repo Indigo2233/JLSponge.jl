@@ -66,7 +66,7 @@ try
         execute(test, Peek("abc"))
         execute(test, Pop(1))
 
-        for _ in 0:99997
+        for _ in 0:997
             execute(test, RemainingCapacity(1))
             execute(test, BufferSize(2))
             execute(test, with_bytes_written!(Write("abc"), 1))
@@ -95,7 +95,6 @@ try
         execute(test, Eof(true))
     end
     tc = (time_ns() - ts |> Int) / 1e9
-    @info "byte_stream_capacity passed........... Time: $tc"
 catch e
     println(stderr, e)
 end
