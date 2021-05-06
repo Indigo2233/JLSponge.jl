@@ -18,10 +18,7 @@ function segment_arrives(receiver::TCPReceiver; data="", with_ack=nothing, with_
     res = ackno(receiver) === nothing ? SegmentArrives_Result_NOT_SYN :
           SegmentArrives_Result_OK
 
-    if result !== nothing && result != res
-        error("TCPReceiver::segment_received!() reported `", result,
-              "`, but it was expected to report `", res, "`")
-    end
+    result !== nothing && @test result == res    
 end
 
 function expect_seg(sender::TCPSender; 
@@ -40,21 +37,20 @@ function expect_seg(sender::TCPSender;
     isempty(segments) && error("No segs")
     seg = dequeue!(segments)
     hd = seg.header
-    (!isnothing(ack) && hd.ack != ack) && error("ack error")
-    (!isnothing(rst) && hd.rst != rst) && error("rst error")
-    (!isnothing(syn) && hd.syn != syn) && error("syn error")
-    (!isnothing(fin) && hd.fin != fin) && error("fin error")
-    (!isnothing(seqno) && hd.seqno != seqno) && error("seqno error")
-    (!isnothing(ackno) && hd.ackno != ackno) && error("ackno error")
+    !isnothing(ack) && @test hd.ack == ack
+    !isnothing(rst) && @test hd.rst == rst
+    !isnothing(syn) && @test hd.syn == syn
+    !isnothing(fin) && @test hd.fin == fin
+    !isnothing(seqno) && @test hd.seqno == seqno
+    !isnothing(ackno) && @test hd.ackno == ackno
     
-    (!isnothing(win) && hd.win != win) && error("win error")
-    (!isnothing(payload_size) && length(seg.payload) != payload_size) && error("payload_size error")
-    (!isnothing(data) && seg.payload.storage[] != data) && error("data error")
+    !isnothing(win) && @test hd.win == win
+    !isnothing(payload_size) && @test length(seg.payload) == payload_size
+    !isnothing(data) && @test seg.payload.storage[] == data
     nothing
 end
 
-expect_no_seg(sender::TCPSender) = !isempty(sender.segments_out) && error("expect_no_seg")
-
+expect_no_seg(sender::TCPSender) = @test isempty(sender.segments_out) 
 
 function ack_received_test(sender::TCPSender, ackno, win_size::Integer=UInt16(137))
     ack_received!(sender, ackno, UInt16(win_size))
@@ -68,5 +64,5 @@ function write_bytes!(sender::TCPSender, bytes="", end_input=false)
 end
 
 function expect_state(sender::TCPSender, state)
-    state_summary(sender) != state && error("state error:", state_summary(sender), " rather than ", state)
+    @test state_summary(sender) == state
 end

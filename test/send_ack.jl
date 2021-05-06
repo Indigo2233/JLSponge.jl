@@ -1,5 +1,5 @@
-function main()
-    let 
+@testset "send_ack.jl" begin
+    @testset begin 
         isn = rand(UInt32(0):typemax(UInt32))
         sender = TCPSender(fixed_isn=WrappingInt32(isn))
         fill_window!(sender)
@@ -13,7 +13,7 @@ function main()
         expect_no_seg(sender)
     end
 
-    let 
+    @testset begin 
         isn = rand(UInt32(0):typemax(UInt32))
         sender = TCPSender(fixed_isn=WrappingInt32(isn))
         fill_window!(sender)
@@ -31,7 +31,7 @@ function main()
         ack_received_test(sender, WrappingInt32(isn + 1))
         expect_no_seg(sender)
     end
-    let 
+    @testset begin 
         isn = rand(UInt32(0):typemax(UInt32))
         sender = TCPSender(fixed_isn=WrappingInt32(isn))
         fill_window!(sender)
@@ -51,7 +51,7 @@ function main()
     end
     
     
-    let 
+    @testset begin 
         isn = rand(UInt32(0):typemax(UInt32))
         sender = TCPSender(fixed_isn=WrappingInt32(isn))
         fill_window!(sender)
@@ -61,7 +61,7 @@ function main()
         expect_state(sender, JLSponge.SYN_SENT)
     end
     
-    let
+    @testset begin
         isn = rand(UInt32(0):typemax(UInt32))
         sender = TCPSender(fixed_isn=WrappingInt32(isn))
         fill_window!(sender)
@@ -71,4 +71,3 @@ function main()
         expect_state(sender, JLSponge.SYN_SENT)
     end
 end
-main()
