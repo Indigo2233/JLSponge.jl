@@ -19,5 +19,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/AquaIndigo/JLSponge.jl",
+    repo="github.com/AquaIndigo/JLSponge.jl", devbranch = "main"
 )
