@@ -19,5 +19,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/sjtu_suyao/JLSponge.jl",
+    repo="github.com/AquaIndigo/JLSponge.jl",
 )
