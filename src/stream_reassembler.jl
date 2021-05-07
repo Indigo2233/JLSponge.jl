@@ -55,7 +55,7 @@ function push_substring!(sr::StreamReassembler, data::AbstractString, index::Int
     return
 end
 
-stream_out(sr::StreamReassembler) = sr.output
+@inline stream_out(sr::StreamReassembler) = sr.output
 
 unassembled_bytes(sr::StreamReassembler) = sr.unassembled_bytes
 

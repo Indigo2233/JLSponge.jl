@@ -1,11 +1,11 @@
 ackno(tr::TCPReceiver)::Union{Nothing,WrappingInt32} = 
     !tr.has_syn ? nothing : wrap(UInt(stream_out(tr).bytes_written_count) + stream_out(tr).has_eof + 1, tr.isn)
 
-window_size(tr::TCPReceiver) = tr.capacity - buffer_size(tr.reassembler.output)
+window_size(tr::TCPReceiver) = tr.capacity - buffer_size(tr.reassembler |> stream_out)
 
 unassembled_bytes(tr::TCPReceiver) = tr.reassembler.unassembled_bytes
 
-stream_out(tr::TCPReceiver) = tr.reassembler.output
+stream_out(tr::TCPReceiver) = tr.reassembler |> stream_out
 
 assembled_bytes(tr::TCPReceiver) = tr.reassembler.cur_idx
 
