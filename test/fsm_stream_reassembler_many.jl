@@ -29,7 +29,7 @@
         @test rs.cur_idx == 2
         @test read!(rs.output) == "ab"
 
-        @test rs.unassembled_bytes == 0
+        @test unassembled_bytes(rs) == 0
     end
 
     @testset begin 
