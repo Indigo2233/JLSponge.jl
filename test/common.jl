@@ -34,7 +34,7 @@ function expect_seg(sender::TCPSender;
         fin = isnothing(fin) ? false : fin
     end
 
-    segments = sender.segments_out
+    segments = segments_out(sender)
     isempty(segments) && error("No segs")
     seg = dequeue!(segments)
     hd = seg.header
