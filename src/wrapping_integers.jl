@@ -2,11 +2,15 @@ import Base.-, Base.+
 @inline -(a::WrappingInt32, b::WrappingInt32) = a.val - b.val
 @inline +(a::WrappingInt32, b::UInt32) = WrappingInt32(a.val + b)
 @inline -(a::WrappingInt32, b::UInt32) = a + -b
+@inline +(a::WrappingInt32, b::Integer) = a + UInt32(b)
+@inline -(a::WrappingInt32, b::Integer) = a + -UInt32(b)
 
 function wrap(n::UInt, isn::WrappingInt32)
     tmp = UInt32((n << 32 >> 32))
     return isn + tmp
 end
+
+wrap(n::Integer, isn::WrappingInt32) = wrap(UInt(n), isn)
 
 function unwrap(n::WrappingInt32, isn::WrappingInt32, checkpoint::Integer)
     ckpt = UInt(checkpoint)

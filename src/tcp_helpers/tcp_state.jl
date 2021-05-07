@@ -1,11 +1,3 @@
-import Base.==, Base.!=
-@kwdef mutable struct TCPState
-    sender::String = ""
-    receiver::String = ""
-    active::Bool = true
-    linger_after_streams_finish::Bool = true
-end 
-
 @enum State begin
     LISTEN
     SYN_RCVD
@@ -25,6 +17,39 @@ end
     RESET
     ERROR
 end
+
+struct TCPState
+    sender::State
+    receiver::State
+    active::Bool
+    linger_after_streams_finish::Bool
+    TCPState(sender, receiver, active, linger_after_streams_finish) = 
+        new(receiver, sender, active, linger_after_streams_finish)
+    TCPState(sender, receiver) = new(receiver, sender, true, true)
+end 
+
+const TCP_STATE_DICT = Dict{State, TCPState}(
+    LISTEN => TCPState(LISTEN, CLOSED),
+    SYN_RCVD => TCPState(SYN_RCVD, SYN_SENT),
+    SYN_SENT => TCPState(LISTEN, SYN_SENT),
+    ESTABLISHED => TCPState(SYN_RCVD, SYN_ACKED),
+    CLOSE_WAIT => TCPState(FIN_RCVD, SYN_ACKED, true, false),
+    LAST_ACK => TCPState(FIN_RCVD, FIN_SENT, true, false),
+    CLOSING => TCPState(FIN_RCVD, FIN_SENT),
+    FIN_WAIT_1 => TCPState(SYN_RCVD, FIN_SENT),
+    FIN_WAIT_2 => TCPState(SYN_RCVD, FIN_ACKED),
+    TIME_WAIT => TCPState(FIN_RCVD, FIN_ACKED),
+    RESET => TCPState(ERROR, ERROR, false, false),
+    CLOSED => TCPState(FIN_RCVD, FIN_ACKED, false, false)
+)
+
+TCPState(state::State) = TCP_STATE_DICT[state]
+
+TCPState(sender::TCPSender, receiver::TCPReceiver, active::Bool, linger::Bool) = 
+    TCPState(state_summary(sender), state_summary(receiver), active, active ? linger : false)
+
+TCPState(conn::TCPConnection) = 
+    TCPState(conn.sender, conn.receiver, conn.active, conn.linger_after_streams_finish)
 
 function state_summary(receiver::TCPReceiver)
     error(stream_out(receiver)) && return ERROR 

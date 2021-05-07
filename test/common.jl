@@ -3,6 +3,7 @@ using JLSponge
 using Test
 const SegmentArrives_Result_OK = true
 const SegmentArrives_Result_NOT_SYN = false
+const DEFAULT_TEST_WINDOW = UInt(137)
 
 function build_seg(; data="", ack=false, rst=false, syn=false, fin=false,
                    seqno=WrappingInt32(0), ackno=WrappingInt32(0), win=UInt16(0))
@@ -22,7 +23,8 @@ function segment_arrives(receiver::TCPReceiver; data="", with_ack=nothing, with_
     result !== nothing && @test result == res    
 end
 
-function expect_seg(sender::TCPSender; 
+
+function expect_seg(segments::Queue{TCPSegment}; 
     no_flag = nothing,
     ack=nothing, rst=nothing, syn=nothing, fin=nothing,
     payload_size=nothing, seqno=nothing, ackno=nothing,
@@ -34,7 +36,6 @@ function expect_seg(sender::TCPSender;
         fin = isnothing(fin) ? false : fin
     end
 
-    segments = segments_out(sender)
     isempty(segments) && error("No segs")
     seg = dequeue!(segments)
     hd = seg.header
@@ -50,6 +51,16 @@ function expect_seg(sender::TCPSender;
     !isnothing(data) && @test seg.payload.storage[] == data
     nothing
 end
+
+function expect_seg(sender::TCPSender; 
+    no_flag = nothing,
+    ack=nothing, rst=nothing, syn=nothing, fin=nothing,
+    payload_size=nothing, seqno=nothing, ackno=nothing,
+    data=nothing, win = nothing)
+
+    expect_seg(sender.segments_out; no_flag, ack, rst, syn, fin, payload_size, seqno, ackno, data, win)
+end
+
 
 expect_no_seg(sender::TCPSender) = @test isempty(sender.segments_out) 
 
@@ -69,3 +80,76 @@ function expect_state(sender::TCPSender, state)
 end
 
 sender_close(sender::TCPSender) = write_bytes!(sender, "", true)
+
+fsm_in_listen(;cap::Int=64000, retx_timeout::UInt16=UInt16(1000), fixed_isn=nothing) = 
+    TCPConnection(;cap, retx_timeout, fixed_isn)
+    
+function fsm_in_syn_sent(fixed_isn; cap::Int=64000, retx_timeout::UInt16=UInt16(1000))
+   conn = TCPConnection(;cap, retx_timeout, fixed_isn)
+   connect!(conn)
+   expect_one_seg(conn; no_flag=true, syn=true, seqno=fixed_isn, payload_size=0)
+   conn
+end
+
+function fsm_in_established(tx_isn::WrappingInt32, rx_isn::WrappingInt32)
+    conn = fsm_in_syn_sent(tx_isn)    
+    send_syn!(conn, rx_isn, tx_isn + 1)
+    expect_one_seg(conn; no_flag=true, ack=true, ackno=rx_isn + 1, payload_size=0)
+    conn
+end
+
+send_syn!(conn::TCPConnection, seqno::WrappingInt32, ackno::WrappingInt32=WrappingInt32(0)) =
+    send_seg!(conn; syn=true, seqno, ackno, win=DEFAULT_TEST_WINDOW)
+
+function expect_one_seg(conn::TCPConnection; 
+    no_flag=nothing,
+    ack=nothing, rst=nothing, syn=nothing, fin=nothing,
+    payload_size=nothing, seqno=nothing, ackno=nothing,
+    data=nothing, win = nothing)
+
+    expect_seg(conn.segments_out; no_flag, ack, rst, syn, fin, payload_size, seqno, ackno, data, win)
+    @test conn.segments_out |> isempty
+end
+
+function send_seg!(conn::TCPConnection; 
+    ack=false, rst=false, syn=false, fin=false,
+    seqno=WrappingInt32(0), ackno=WrappingInt32(0),
+    data="", win = UInt16(0))
+
+    seg = build_seg(;data, ack, rst, syn, fin, seqno, ackno, win)
+    segment_received!(conn, seg)
+end
+
+function send_ack!(conn::TCPConnection, seqno::WrappingInt32, ackno::WrappingInt32, swin=DEFAULT_TEST_WINDOW)
+    win = swin
+    send_seg!(conn; win, seqno, ackno) 
+end
+
+function send_rst!(conn::TCPConnection, seqno::WrappingInt32, ackno=nothing)
+    ackno === nothing ?
+    send_seg!(conn; seqno, rst=true) :
+    send_seg!(conn; seqno, rst=true, ackno=ackno, ack=true)
+end
+
+function send_byte!(conn::TCPConnection, 
+    seqno::WrappingInt32, 
+    ackno::Union{WrappingInt32, Nothing}, val::Char)
+
+    ackno === nothing ?
+    send_seg!(conn; seqno, data=string(val)) :
+    send_seg!(conn; seqno, data=string(val), ackno=ackno, ack=true)
+end
+
+expect_state(conn::TCPConnection, state::JLSponge.State) = @test TCPState(conn) == TCPState(state)
+
+expect_no_seg(conn::TCPConnection) = @test isempty(conn.segments_out)
+
+function expect_data!(conn::TCPConnection, data::Nothing=nothing)
+    bytes_avail = inbound_stream(conn) |> buffer_size
+    actual_data = read!(inbound_stream(conn), bytes_avail)
+end
+
+function expect_data!(conn::TCPConnection, data::String)
+    actual_data = expect_data!(conn)
+    @test data == actual_data
+end

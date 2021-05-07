@@ -10,6 +10,8 @@ time_since_last_segment_received(conn::TCPConnection) = conn.time_since_last_seg
 
 isactive(conn::TCPConnection) = conn.active
 
+inbound_stream(conn::TCPConnection) = conn.receiver.reassembler.output 
+
 function segment_received!(conn::TCPConnection, seg::TCPSegment)
     !conn.active && return
     conn.time_since_last_segment_received = 0
@@ -29,6 +31,7 @@ function segment_received!(conn::TCPConnection, seg::TCPSegment)
         if seg.header.syn && !seg.header.ack
             segment_received!(conn.receiver, seg)
             send_empty_segment!(conn.sender)
+            send_segs!(conn)
             return
         end
         if seg.header.rst
@@ -97,7 +100,7 @@ end
 
 function unclean_shutdown!(conn::TCPConnection)
     set_error(conn.sender.stream)
-    set_error(conn.receiver |> stream_in)
+    set_error(conn.receiver |> stream_out)
     conn.active = false
     seg = dequeue!(conn.sender.segments_out)
     if ackno(conn.receiver) !== nothing

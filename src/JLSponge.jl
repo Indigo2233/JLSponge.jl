@@ -27,4 +27,8 @@ export TCPSender, bytes_in_flight, next_seqno_absolute, next_seqno, segments_out
        fill_window!, send_seg!, ack_received!, tick!, consecutive_retransmissions,
        send_empty_segment!
 
+export TCPConnection, remaining_outbound_capacity, time_since_last_segment_received, inbound_stream,
+        isactive, send_segs!, end_input_stream!, connect!, unclean_shutdown!, clean_shutdown!,
+        TCPState
+
 end

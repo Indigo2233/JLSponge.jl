@@ -69,18 +69,18 @@ mutable struct TCPConnection
     function TCPConnection(;cap::Int=64000, retx_timeout::UInt16=UInt16(1000), fixed_isn=nothing)
         conn = new(TCPReceiver(cap), 
             TCPSender(;cap, retx_timeout, fixed_isn),
-            Queue{TCPSegment}(), true, true, 0, UInt16(rt_timeout))
-        function f(conn::TCPConnection)
-            try
-                if conn.active
-                    println(stderr, "Warning: Unclean shutdown of TCPConnection")
-                    send_empty_segment!(conn)
-                    unclean_shutdown!(conn)
-                end
-            catch e
-                println(stderr, "Exception destructing TCP FSM: ", e)
-            end
-        end
-        finalizer(f, conn)
+            Queue{TCPSegment}(), true, true, 0, UInt16(retx_timeout))
+        # function f(conn::TCPConnection)
+        #     try
+        #         if conn.active
+        #             println(stderr, "Warning: Unclean shutdown of TCPConnection")
+        #             send_empty_segment!(conn)
+        #             unclean_shutdown!(conn)
+        #         end
+        #     catch e
+        #         println(stderr, "Exception destructing TCP FSM: ", e)
+        #     end
+        # end
+        # finalizer(f, conn)
     end
 end
