@@ -24,7 +24,7 @@ export TCPReceiver, ackno, window_size, unassembled_bytes, stream_out, segment_r
        assembled_bytes
 
 export TCPSender, bytes_in_flight, next_seqno_absolute, next_seqno, segments_out, stream_in,
-       fill_window!, send_seg!, ack_received!, tick, consecutive_retransmissions,
+       fill_window!, send_seg!, ack_received!, tick!, consecutive_retransmissions,
        send_empty_segment!
 
 end
