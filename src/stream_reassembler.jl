@@ -11,7 +11,7 @@ function push_substring!(sr::StreamReassembler, data::AbstractString, index::Int
     abs_idx = start_point == 0 ? index : sr.cur_idx
     data = data[(1 + start_point):end_point]
 
-    if !isempty(sr.unassembled_strings)
+    if !isempty(sr)
         prev_it = lb = searchsortedfirst(sr.unassembled_strings, abs_idx)
         if prev_it != startof(sr.unassembled_strings)
             prev_it = regress((sr.unassembled_strings, prev_it))            
@@ -42,7 +42,7 @@ function push_substring!(sr::StreamReassembler, data::AbstractString, index::Int
     sr.unassembled_strings[abs_idx] = data
     sr.unassembled_bytes += length(data)
 
-    if !isempty(sr.unassembled_strings)
+    if !isempty(sr)
         bg = startof(sr.unassembled_strings)
         fst = deref((sr.unassembled_strings, bg))
         (fst[1] != sr.cur_idx) && return
