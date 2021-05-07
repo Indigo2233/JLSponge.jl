@@ -1,4 +1,4 @@
-const MAX_PAYLOAD_SIZE = 1000
+const MAX_PAYLOAD_SIZE = 1460
 
 bytes_in_flight(sender::TCPSender) = sender.bytes_in_flight
 

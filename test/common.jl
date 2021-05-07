@@ -1,5 +1,6 @@
 using DataStructures
 using JLSponge
+using Test
 const SegmentArrives_Result_OK = true
 const SegmentArrives_Result_NOT_SYN = false
 
@@ -66,3 +67,5 @@ end
 function expect_state(sender::TCPSender, state)
     @test state_summary(sender) == state
 end
+
+sender_close(sender::TCPSender) = write_bytes!(sender, "", true)
