@@ -20,7 +20,7 @@ end
 end
 
 struct Buffer
-    storage::Base.RefValue{String}
+    storage::Union{Base.RefValue{String}, Base.RefValue{SubString{String}}}
 end
 
 struct TCPSegment

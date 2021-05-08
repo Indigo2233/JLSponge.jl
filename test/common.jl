@@ -225,6 +225,12 @@ function send_byte!(conn::TCPConnection,
     send_seg!(conn; seqno, data=string(val), ackno=ackno, ack=true)
 end
 
+function send_data!(conn::TCPConnection, 
+    seqno::WrappingInt32, 
+    ackno::WrappingInt32, data::AbstractString)
+    send_seg!(conn; ack=true, ackno, data, seqno)
+end
+
 expect_state(conn::TCPConnection, state::JLSponge.State) = @test TCPState(conn) == TCPState(state)
 
 expect_notin_state(conn::TCPConnection, state::JLSponge.State) = @test TCPState(conn) != TCPState(state)
