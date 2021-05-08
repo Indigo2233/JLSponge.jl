@@ -122,7 +122,7 @@ function fsm_in_last_ack(tx_isn::WrappingInt32=WrappingInt32(0),
 
     conn = fsm_in_close_wait(rx_isn, rx_isn) 
     conn |> end_input_stream!
-    expect_one_seg(conn, no_flag=true, fin=true, ack=true, ackno=rx_isn+1, seqno=tx_isn+2)
+    expect_one_seg(conn, no_flag=true, fin=true, ack=true, seqno=rx_isn+1, ackno=tx_isn+2)
     conn
 end
 

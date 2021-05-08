@@ -115,7 +115,7 @@ end
 function clean_shutdown!(conn::TCPConnection)
     !input_ended(stream_out(conn.receiver)) && return
     if !eof(conn.sender.stream)
-        conn.linger_after_streams_finish = true
+        conn.linger_after_streams_finish = false
     elseif bytes_in_flight(conn.sender) == 0
         if !conn.linger_after_streams_finish ||
             conn.time_since_last_segment_received >= 10 * conn.rt_timeout
