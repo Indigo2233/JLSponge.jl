@@ -67,21 +67,21 @@
         tick!(conn, 5)
         send_fin!(conn, rx_seqno, WrappingInt32(2))
         expect_state(conn, JLSponge.TIME_WAIT)
-        @test conn.time_since_last_segment_received == 0
+        @test conn |> time_since_last_segment_received == 0
         ack_expect = rx_seqno + 1
         tick!(conn, 1)
-        @test conn.time_since_last_segment_received == 1
+        @test conn |> time_since_last_segment_received == 1
         expect_one_seg(conn, no_flag=true, ack=true, ackno=ack_expect)
         tick!(conn, 10TIMEOUT_DFLT - 10)
-        @test conn.time_since_last_segment_received == 10TIMEOUT_DFLT - 9
+        @test conn |> time_since_last_segment_received == 10TIMEOUT_DFLT - 9
         send_fin!(conn, rx_seqno, WrappingInt32(2))
-        @test conn.time_since_last_segment_received == 0
+        @test conn |> time_since_last_segment_received == 0
         tick!(conn, 1)
         expect_one_seg(conn, ack=true, ackno=ack_expect)
         expect_state(conn, JLSponge.TIME_WAIT)
 
         tick!(conn, 10TIMEOUT_DFLT - 10)
-        @test conn.time_since_last_segment_received == 10TIMEOUT_DFLT - 9
+        @test conn |> time_since_last_segment_received == 10TIMEOUT_DFLT - 9
         expect_no_seg(conn)
         tick!(conn, 10)
         expect_state(conn, JLSponge.CLOSED)
