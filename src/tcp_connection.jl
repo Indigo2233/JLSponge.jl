@@ -1,4 +1,4 @@
-const MAX_RETX_ATTEMPTS = 10
+const MAX_RETX_ATTEMPTS = 8
 
 remaining_outbound_capacity(conn::TCPConnection) = remain_cap(conn.sender.stream)
 
@@ -117,7 +117,7 @@ function clean_shutdown!(conn::TCPConnection)
     if !eof(conn.sender.stream)
         conn.linger_after_streams_finish = true
     elseif bytes_in_flight(conn.sender) == 0
-        if !conn.linger_after_streams_finish && 
+        if !conn.linger_after_streams_finish ||
             conn.time_since_last_segment_received >= 10 * conn.rt_timeout
             conn.active = false
         end

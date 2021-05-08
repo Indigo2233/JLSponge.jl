@@ -69,7 +69,7 @@ mutable struct TCPConnection
     function TCPConnection(;cap::Int=64000, retx_timeout::UInt16=UInt16(1000), fixed_isn=nothing)
         conn = new(TCPReceiver(cap), 
             TCPSender(;cap, retx_timeout, fixed_isn),
-            Queue{TCPSegment}(), true, true, 0, UInt16(retx_timeout))
+            Queue{TCPSegment}(), true, true, UInt16(retx_timeout), 0)
         # function f(conn::TCPConnection)
         #     try
         #         if conn.active

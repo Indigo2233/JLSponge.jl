@@ -91,15 +91,67 @@ function fsm_in_syn_sent(fixed_isn; cap::Int=64000, retx_timeout::UInt16=UInt16(
    conn
 end
 
-function fsm_in_established(tx_isn::WrappingInt32, rx_isn::WrappingInt32)
-    conn = fsm_in_syn_sent(tx_isn)    
+function fsm_in_established(tx_isn::WrappingInt32=WrappingInt32(0), 
+    rx_isn::WrappingInt32=WrappingInt32(0))
+
+    conn = fsm_in_syn_sent(tx_isn)
     send_syn!(conn, rx_isn, tx_isn + 1)
     expect_one_seg(conn; no_flag=true, ack=true, ackno=rx_isn + 1, payload_size=0)
     conn
 end
 
-send_syn!(conn::TCPConnection, seqno::WrappingInt32, ackno::WrappingInt32=WrappingInt32(0)) =
-    send_seg!(conn; syn=true, seqno, ackno, win=DEFAULT_TEST_WINDOW)
+function fsm_in_close_wait(tx_isn::WrappingInt32=WrappingInt32(0), 
+    rx_isn::WrappingInt32=WrappingInt32(0))
+
+    conn = fsm_in_established()
+    send_fin!(conn, rx_isn + 1, tx_isn + 1)
+    expect_one_seg(conn, no_flag=true, ack=true, ackno=rx_isn+2)
+    conn
+end
+
+function fsm_in_last_ack(tx_isn::WrappingInt32=WrappingInt32(0), 
+    rx_isn::WrappingInt32=WrappingInt32(0))
+
+    conn = fsm_in_close_wait(rx_isn, rx_isn) 
+    conn |> end_input_stream!
+    expect_one_seg(conn, no_flag=true, fin=true, ack=true, ackno=rx_isn+1, seqno=tx_isn+2)
+    conn
+end
+
+function fsm_in_fin_wait_1(tx_isn::WrappingInt32=WrappingInt32(0), 
+    rx_isn::WrappingInt32=WrappingInt32(0))
+
+    conn = fsm_in_established(tx_isn, rx_isn)
+    conn |> end_input_stream!
+    expect_one_seg(conn, no_flag=true, fin=true, ack=true, ackno=rx_isn+1, seqno=tx_isn+1)
+    conn
+end
+
+function fsm_in_fin_wait_2(tx_isn::WrappingInt32=WrappingInt32(0), 
+    rx_isn::WrappingInt32=WrappingInt32(0))
+
+    conn = fsm_in_fin_wait_1(tx_isn, rx_isn)
+    send_ack!(conn, rx_isn + 1, tx_isn + 2)
+    conn   
+end
+
+function fsm_in_closing(tx_isn::WrappingInt32=WrappingInt32(0), 
+    rx_isn::WrappingInt32=WrappingInt32(0))
+
+    conn = fsm_in_fin_wait_1(tx_isn, rx_isn)
+    send_fin!(conn, rx_isn + 1, tx_isn + 1)
+    expect_one_seg(conn, no_flag=true, ack=true, ackno=rx_isn+2)
+    conn
+end
+
+function fsm_in_time_wait(tx_isn::WrappingInt32=WrappingInt32(0), 
+    rx_isn::WrappingInt32=WrappingInt32(0))
+
+    conn = fsm_in_fin_wait_1(tx_isn, rx_isn)
+    send_fin!(conn, rx_isn + 1, tx_isn + 2)
+    expect_one_seg(conn, no_flag=true, ack=true, ackno=rx_isn+2)
+    conn
+end
 
 function expect_one_seg(conn::TCPConnection; 
     no_flag=nothing,
@@ -111,6 +163,12 @@ function expect_one_seg(conn::TCPConnection;
     @test conn.segments_out |> isempty
 end
 
+function send_syn!(conn::TCPConnection, seqno::WrappingInt32, ackno::WrappingInt32=WrappingInt32(0))
+    ackno === nothing ?
+    send_seg!(conn; syn=true, seqno) :
+    send_seg!(conn; syn=true, seqno, ack=true, ackno)
+end
+
 function send_seg!(conn::TCPConnection; 
     ack=false, rst=false, syn=false, fin=false,
     seqno=WrappingInt32(0), ackno=WrappingInt32(0),
@@ -118,6 +176,7 @@ function send_seg!(conn::TCPConnection;
 
     seg = build_seg(;data, ack, rst, syn, fin, seqno, ackno, win)
     segment_received!(conn, seg)
+    nothing
 end
 
 function send_ack!(conn::TCPConnection, seqno::WrappingInt32, ackno::WrappingInt32, swin=DEFAULT_TEST_WINDOW)
@@ -131,6 +190,12 @@ function send_rst!(conn::TCPConnection, seqno::WrappingInt32, ackno=nothing)
     send_seg!(conn; seqno, rst=true, ackno=ackno, ack=true)
 end
 
+function send_fin!(conn::TCPConnection, seqno::WrappingInt32, ackno=nothing)
+    ackno === nothing ?
+    send_seg!(conn; seqno, fin=true) :
+    send_seg!(conn; seqno, fin=true, ack=true, ackno=ackno)    
+end
+
 function send_byte!(conn::TCPConnection, 
     seqno::WrappingInt32, 
     ackno::Union{WrappingInt32, Nothing}, val::Char)
@@ -142,6 +207,8 @@ end
 
 expect_state(conn::TCPConnection, state::JLSponge.State) = @test TCPState(conn) == TCPState(state)
 
+expect_notin_state(conn::TCPConnection, state::JLSponge.State) = @test TCPState(conn) != TCPState(state)
+
 expect_no_seg(conn::TCPConnection) = @test isempty(conn.segments_out)
 
 function expect_data!(conn::TCPConnection, data::Nothing=nothing)
@@ -152,4 +219,8 @@ end
 function expect_data!(conn::TCPConnection, data::String)
     actual_data = expect_data!(conn)
     @test data == actual_data
+end
+
+function expect_no_data(conn::TCPConnection)
+    @test inbound_stream(conn) |> buffer_size == 0
 end
