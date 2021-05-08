@@ -75,7 +75,7 @@ function tick!(conn::TCPConnection, ms_since_last_tick::Int)
 end
 
 function send_segs!(conn::TCPConnection)
-    while conn.sender.segments_out |> !isempty
+    while conn.sender |> segments_out |> !isempty
         seg = dequeue!(conn.sender.segments_out)
         if ackno(conn.receiver) !== nothing
             seg.header.ack = true
