@@ -23,7 +23,7 @@ function segment_received!(conn::TCPConnection, seg::TCPSegment)
         connect!(conn)
         return
     end
-    # STATE: SYN_SENT => ESTABLISED
+    # STATE: SYN_SENT => ESTABLISHED
     # receive SYN + ACK / send ACK
     if ackno(conn.receiver) === nothing && next_seqno_absolute(conn.sender) != 0 &&
         bytes_in_flight(conn.sender) == next_seqno_absolute(conn.sender)
