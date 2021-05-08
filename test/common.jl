@@ -164,7 +164,7 @@ function expect_one_seg(conn::TCPConnection;
     seg
 end
 
-function send_syn!(conn::TCPConnection, seqno::WrappingInt32, ackno::WrappingInt32=WrappingInt32(0))
+function send_syn!(conn::TCPConnection, seqno::WrappingInt32, ackno=nothing)
     ackno === nothing ?
     send_seg!(conn; syn=true, seqno) :
     send_seg!(conn; syn=true, seqno, ack=true, ackno)
