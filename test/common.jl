@@ -61,6 +61,14 @@ function expect_seg(sender::TCPSender;
     expect_seg(sender.segments_out; no_flag, ack, rst, syn, fin, payload_size, seqno, ackno, data, win)
 end
 
+function expect_seg(conn::TCPConnection; 
+    no_flag = nothing,
+    ack=nothing, rst=nothing, syn=nothing, fin=nothing,
+    payload_size=nothing, seqno=nothing, ackno=nothing,
+    data=nothing, win = nothing)
+
+    expect_seg(conn.segments_out; no_flag, ack, rst, syn, fin, payload_size, seqno, ackno, data, win)
+end
 
 expect_no_seg(sender::TCPSender) = @test isempty(sender.segments_out) 
 
@@ -92,9 +100,9 @@ function fsm_in_syn_sent(fixed_isn; cap::Int=64000, retx_timeout::UInt16=UInt16(
 end
 
 function fsm_in_established(tx_isn::WrappingInt32=WrappingInt32(0), 
-    rx_isn::WrappingInt32=WrappingInt32(0))
+    rx_isn::WrappingInt32=WrappingInt32(0); args...)
 
-    conn = fsm_in_syn_sent(tx_isn)
+    conn = fsm_in_syn_sent(tx_isn; args...)
     send_syn!(conn, rx_isn, tx_isn + 1)
     expect_one_seg(conn; no_flag=true, ack=true, ackno=rx_isn + 1, payload_size=0)
     conn
@@ -176,6 +184,17 @@ function send_seg!(conn::TCPConnection;
     data="", win = UInt16(0))
 
     seg = build_seg(;data, ack, rst, syn, fin, seqno, ackno, win)
+    segment_received!(conn, seg)
+    nothing
+end
+
+function send_seg!(conn::TCPConnection, seg::TCPSegment)
+    hdr = seg.header
+    seg = build_seg(;data=seg.payload.storage[], 
+        ack=hdr.ack, rst=hdr.rst, syn=hdr.syn, 
+        fin=hdr.fin, seqno=hdr.seqno, 
+        ackno=hdr.ackno, win=hdr.win)
+
     segment_received!(conn, seg)
     nothing
 end

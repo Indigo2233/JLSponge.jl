@@ -59,7 +59,7 @@ function segment_received!(conn::TCPConnection, seg::TCPSegment)
     send_segs!(conn)
 end 
 
-function write!(conn::TCPConnection, data::String)
+function write!(conn::TCPConnection, data::AbstractString)
     write_size = write!(conn.sender.stream, data)
     fill_window!(conn.sender)
     send_segs!(conn)

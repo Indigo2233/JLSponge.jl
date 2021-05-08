@@ -28,7 +28,7 @@ remain_cap(bs::ByteStream)::Int = bs.buf.capacity - length(bs.buf)
 
 buffer_size(bs::ByteStream)::Int = length(bs.buf)
 
-function write!(bs::ByteStream, data::String)::Int
+function write!(bs::ByteStream, data::AbstractString)::Int
     isempty(data) && return 0
     bytes_to_write = min(length(data), remain_cap(bs))
     @inbounds append!(bs.buf, @view(codeunits(data)[1:bytes_to_write]))
