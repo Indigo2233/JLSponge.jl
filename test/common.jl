@@ -49,7 +49,7 @@ function expect_seg(segments::Queue{TCPSegment};
     !isnothing(win) && @test hd.win == win
     !isnothing(payload_size) && @test length(seg.payload) == payload_size
     !isnothing(data) && @test seg.payload.storage[] == data
-    nothing
+    seg
 end
 
 function expect_seg(sender::TCPSender; 
@@ -159,8 +159,9 @@ function expect_one_seg(conn::TCPConnection;
     payload_size=nothing, seqno=nothing, ackno=nothing,
     data=nothing, win = nothing)
 
-    expect_seg(conn.segments_out; no_flag, ack, rst, syn, fin, payload_size, seqno, ackno, data, win)
+    seg = expect_seg(conn.segments_out; no_flag, ack, rst, syn, fin, payload_size, seqno, ackno, data, win)
     @test conn.segments_out |> isempty
+    seg
 end
 
 function send_syn!(conn::TCPConnection, seqno::WrappingInt32, ackno::WrappingInt32=WrappingInt32(0))
