@@ -24,23 +24,23 @@ struct TCPState
     active::Bool
     linger_after_streams_finish::Bool
     TCPState(sender, receiver, active, linger_after_streams_finish) = 
-        new(receiver, sender, active, linger_after_streams_finish)
-    TCPState(sender, receiver) = new(receiver, sender, true, true)
-end 
+        new(sender, receiver, active, linger_after_streams_finish)
+    TCPState(sender, receiver) = new(sender, receiver, true, true)
+end
 
 const TCP_STATE_DICT = Dict{State, TCPState}(
-    LISTEN => TCPState(LISTEN, CLOSED),
-    SYN_RCVD => TCPState(SYN_RCVD, SYN_SENT),
-    SYN_SENT => TCPState(LISTEN, SYN_SENT),
-    ESTABLISHED => TCPState(SYN_RCVD, SYN_ACKED),
-    CLOSE_WAIT => TCPState(FIN_RCVD, SYN_ACKED, true, false),
-    LAST_ACK => TCPState(FIN_RCVD, FIN_SENT, true, false),
-    CLOSING => TCPState(FIN_RCVD, FIN_SENT),
-    FIN_WAIT_1 => TCPState(SYN_RCVD, FIN_SENT),
-    FIN_WAIT_2 => TCPState(SYN_RCVD, FIN_ACKED),
-    TIME_WAIT => TCPState(FIN_RCVD, FIN_ACKED),
+    LISTEN => TCPState(CLOSED, LISTEN),
+    SYN_RCVD => TCPState(SYN_SENT, SYN_RCVD),
+    SYN_SENT => TCPState(SYN_SENT, LISTEN),
+    ESTABLISHED => TCPState(SYN_ACKED, SYN_RCVD),
+    CLOSE_WAIT => TCPState(SYN_ACKED, FIN_RCVD, true, false),
+    LAST_ACK => TCPState(FIN_SENT, FIN_RCVD, true, false),
+    CLOSING => TCPState(FIN_SENT, FIN_RCVD),
+    FIN_WAIT_1 => TCPState(FIN_SENT, SYN_RCVD),
+    FIN_WAIT_2 => TCPState(FIN_ACKED, SYN_RCVD),
+    TIME_WAIT => TCPState(FIN_ACKED, FIN_RCVD),
     RESET => TCPState(ERROR, ERROR, false, false),
-    CLOSED => TCPState(FIN_RCVD, FIN_ACKED, false, false)
+    CLOSED => TCPState(FIN_ACKED, FIN_RCVD, false, false)
 )
 
 TCPState(state::State) = TCP_STATE_DICT[state]
@@ -53,7 +53,7 @@ TCPState(conn::TCPConnection) =
 
 function state_summary(receiver::TCPReceiver)
     error(stream_out(receiver)) && return ERROR 
-    !isnothing(ackno(receiver)) && return LISTEN
+    isnothing(ackno(receiver)) && return LISTEN
     input_ended(stream_out(receiver)) && return FIN_RCVD
     return SYN_RCVD
 end

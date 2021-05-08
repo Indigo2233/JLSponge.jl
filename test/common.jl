@@ -122,7 +122,7 @@ end
 
 function send_ack!(conn::TCPConnection, seqno::WrappingInt32, ackno::WrappingInt32, swin=DEFAULT_TEST_WINDOW)
     win = swin
-    send_seg!(conn; win, seqno, ackno) 
+    send_seg!(conn; ack=true, win, seqno, ackno) 
 end
 
 function send_rst!(conn::TCPConnection, seqno::WrappingInt32, ackno=nothing)

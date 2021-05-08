@@ -13,7 +13,7 @@ isactive(conn::TCPConnection) = conn.active
 inbound_stream(conn::TCPConnection) = conn.receiver.reassembler.output 
 
 function segment_received!(conn::TCPConnection, seg::TCPSegment)
-    !conn.active && return
+    !isactive(conn) && return
     conn.time_since_last_segment_received = 0
     # STATE: LISTEN => SYN_RECV
     # receive SYN / send SYN + ACK
@@ -36,7 +36,7 @@ function segment_received!(conn::TCPConnection, seg::TCPSegment)
         end
         if seg.header.rst
             set_error(conn.sender.stream)
-            set_error(conn.receiver |> stream_in)
+            set_error(conn.receiver |> stream_out)
             conn.active = false
             return
         end
