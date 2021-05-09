@@ -81,5 +81,6 @@
         expect_state(sender, JLSponge.FIN_ACKED)
         @test sender.bytes_in_flight == 0
         expect_no_seg(sender)
+        tick!(sender, 1)
     end
 end
