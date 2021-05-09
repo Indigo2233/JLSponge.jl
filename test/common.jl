@@ -181,7 +181,7 @@ end
 function send_seg!(conn::TCPConnection; 
     ack=false, rst=false, syn=false, fin=false,
     seqno=WrappingInt32(0), ackno=WrappingInt32(0),
-    data="", win = UInt16(0))
+    data="", win = UInt16(137))
 
     seg = build_seg(;data, ack, rst, syn, fin, seqno, ackno, win)
     segment_received!(conn, seg)
