@@ -8,7 +8,7 @@
             rx_offset = WrappingInt32(rand(UInt32))
             conn = fsm_in_established(rx_offset - 1, rx_offset - 1; cap=DEFAULT_CAPACITY)
             send_ack!(conn, rx_offset, rx_offset, 65000)
-            d = rand(UInt8(0):UInt8(127), DEFAULT_CAPACITY) |> pointer |> unsafe_string
+            d = rand(UInt8(1):UInt8(127), DEFAULT_CAPACITY) |> pointer |> unsafe_string
             sendoff = 0
             while sendoff < length(d)
                 len = min(length(d) - sendoff, rand(UInt) % 8192) 

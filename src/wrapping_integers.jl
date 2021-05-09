@@ -1,5 +1,5 @@
 import Base.-, Base.+
-@inline -(a::WrappingInt32, b::WrappingInt32) = a.val - b.val
+# @inline -(a::WrappingInt32, b::WrappingInt32) = a.val - b.val
 @inline +(a::WrappingInt32, b::UInt32) = WrappingInt32(a.val + b)
 @inline -(a::WrappingInt32, b::UInt32) = a + -b
 @inline +(a::WrappingInt32, b::Integer) = a + UInt32(b)

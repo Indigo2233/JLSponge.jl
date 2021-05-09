@@ -79,10 +79,10 @@ function tick!(sender::TCPSender, ms_since_last_tick::Int)
         end
         sender.ticks = 0        
     end
-    if isempty(sender.outstanding_segs)
-        sender.timer_on = false
-        sender.ticks = 0
-    end    
+    # if isempty(sender.outstanding_segs)
+    #     sender.timer_on = false
+    #     sender.ticks = 0
+    # end
 end
 
 consecutive_retransmissions(sender::TCPSender) = sender.consecutive_retransmissions
