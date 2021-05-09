@@ -83,13 +83,13 @@
                 tick!(conn, (TIMEOUT_DFLT << i) - i)
                 expect_no_seg(conn)
                 tick!(conn, i)
-                expect_one_seg(conn; ack=true, data=d1, payload_size=length(data))
+                expect_one_seg(conn; ack=true, data=d1, payload_size=length(d1))
             end
             send_ack!(conn, tx_ackno, tx_ackno + 4)
             tick!(conn, TIMEOUT_DFLT - 2)
             expect_no_seg(conn)
             tick!(conn, 3)
-            expect_one_seg(conn; ack=true, data=d2, payload_size=length(data))
+            expect_one_seg(conn; ack=true, data=d2, payload_size=length(d2))
         end
         for i in 1:MAX_RETX_ATTEMPTS
             backoff_test(i - 1)
