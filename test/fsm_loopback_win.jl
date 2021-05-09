@@ -13,7 +13,6 @@ import Random.shuffle!
             sendoff = 0
             segs = TCPSegment[] 
             sendoff = 0
-            println(length(d))
             while sendoff < length(d)
                 len = min(length(d) - sendoff, rand(UInt) % 8192) 
                 len == 0 && continue
@@ -26,7 +25,6 @@ import Random.shuffle!
                 end
                 sendoff += len
             end
-            println(length(segs))
             seg_idx = collect(1:length(segs))
             shuffle!(seg_idx)
             acks = TCPSegment[]
