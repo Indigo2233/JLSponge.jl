@@ -91,6 +91,7 @@
             tick!(conn, 3)
             expect_one_seg(conn; ack=true, data=d2, payload_size=length(d2))
         end
+        
         for i in 1:MAX_RETX_ATTEMPTS
             backoff_test(i - 1)
         end
